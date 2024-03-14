@@ -17,6 +17,10 @@ class TrafficLight(Ytime:Int, Gtime:Int) extends Module{
   val Yellow = 2.U
   val Green = 3.U
 
+  // sHGVR: 水平路燈 綠燈，垂直路段 紅燈
+  // sHYVR: 水平路燈 黃燈，垂直路段 紅燈
+  // sHRVG: 水平路燈 紅燈，垂直路段 綠燈
+  // sHRVY: 水平路燈 紅燈，垂直路段 黃燈
   val sIdle :: sHGVR :: sHYVR :: sHRVG :: sHRVY :: Nil = Enum(5)
 
   //State register
@@ -26,12 +30,12 @@ class TrafficLight(Ytime:Int, Gtime:Int) extends Module{
   val cntMode = WireDefault(0.U(1.W))
   val cntReg = RegInit(0.U(4.W))
   val cntDone = Wire(Bool())
-  cntDone := cntReg === 0.U
+  cntDone := cntReg === 0.U      // 倒數計時完成
 
   when(cntDone){
-    when(cntMode === 0.U){
+    when(cntMode === 0.U){       // 綠燈開始倒數計時
       cntReg := (Gtime-1).U
-    }.elsewhen(cntMode === 1.U){
+    }.elsewhen(cntMode === 1.U){ // 黃燈開始倒數計時
       cntReg := (Ytime-1).U
     }
   }.otherwise{
@@ -67,12 +71,12 @@ class TrafficLight(Ytime:Int, Gtime:Int) extends Module{
 
   switch(state){
     is(sHGVR){
-      cntMode := 1.U
+      cntMode := 1.U    // 小心
       io.H_traffic := Green
       io.V_traffic := Red
     }
     is(sHYVR){
-      cntMode := 0.U
+      cntMode := 0.U    // 小心
       io.H_traffic := Yellow
       io.V_traffic := Red
     }

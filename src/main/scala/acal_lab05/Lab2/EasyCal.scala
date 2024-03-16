@@ -11,13 +11,13 @@ class EasyCal extends Module{
 
     //Wire Declaration===================================
     val operator = WireDefault(false.B)
-    operator := io.key_in >= 10.U && io.key_in <= 12.U
+    operator := io.key_in >= 10.U && io.key_in <= 12.U // 0xA: +, 0xB: -, 0xC: *
 
     val num = WireDefault(false.B)
-    num := io.key_in < 10.U
+    num := io.key_in < 10.U // 0~9 用 0x1~0x9 來表示
 
     val equal = WireDefault(false.B)
-    equal := io.key_in === 15.U
+    equal := io.key_in === 15.U // 0xF: =
 
 
     //Reg Declaration====================================
@@ -54,9 +54,9 @@ class EasyCal extends Module{
     }
     //==================================================
 
-    when(state === sSrc1){src1 := (src1<<3.U) + (src1<<1.U) + in_buffer}
-    when(state === sSrc2){src2 := (src2<<3.U) + (src2<<1.U) + in_buffer}
-    when(state === sOp){op := in_buffer - 10.U}
+    when(state === sSrc1){src1 := (src1<<3.U) + (src1<<1.U) + in_buffer} // 乘以10
+    when(state === sSrc2){src2 := (src2<<3.U) + (src2<<1.U) + in_buffer} // 乘以10
+    when(state === sOp){op := in_buffer - 10.U} // add:0.U, sub:1.U, mul:2.U，又 +:0xA, -:0xB, *:0xF
 
     when(state === sEqual){
         src1 := 0.U

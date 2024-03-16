@@ -31,6 +31,7 @@ class IntGen extends Module{
 
     val number = RegInit(0.U(32.W))
     when(state === sAccept){
+        // 乘以10 = 乘以8 + 乘以2
         number := (number<<3.U) + (number<<1.U) + in_buffer
     }.elsewhen(state === sEqual){
         in_buffer := 0.U

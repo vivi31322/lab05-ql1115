@@ -9,7 +9,66 @@ class LongCal extends Module{
         val value = Output(Valid(UInt(32.W)))
     })
 
-    //please implement your code below
-    io.value.valid := false.B
-    io.value.bits := 0.U
+    //Wire Declaration===================================
+    val operator = WireDefault(false.B)
+    operator := io.key_in >= 10.U && io.key_in <= 12.U // 0xA: +, 0xB: -, 0xC: *
+
+    val num = WireDefault(false.B)
+    num := io.key_in < 10.U // 0~9 用 0x1~0x9 來表示
+
+    val equal = WireDefault(false.B)
+    equal := io.key_in === 15.U // 0xF: =
+
+
+    //Reg Declaration====================================
+    val in_buffer = RegNext(io.key_in)
+    val src1 = RegInit(0.U(32.W))
+    val op = RegInit(0.U(2.W))
+    val src2 = RegInit(0.U(32.W))
+
+    //State and Constant Declaration=====================
+    val sIdle :: sSrc1 :: sOp :: sSrc2 :: sEqual :: Nil = Enum(5)
+    val add = 0.U
+    val sub = 1.U
+    val mul = 2.U
+
+    val state = RegInit(sIdle)
+
+    //Next State Decoder
+    switch(state){
+        is(sIdle){
+            state := sSrc1
+        }
+        is(sSrc1){
+            when(operator) {state := sOp}
+        }
+        is(sOp){
+            when(num) {state := sSrc2}
+        }
+        is(sSrc2){
+            when(equal) {state := sEqual}
+        }
+        is(sEqual){
+            state := sSrc1
+        }
+    }
+    //==================================================
+
+    when(state === sSrc1){src1 := (src1<<3.U) + (src1<<1.U) + in_buffer} // 乘以10
+    when(state === sSrc2){src2 := (src2<<3.U) + (src2<<1.U) + in_buffer} // 乘以10
+    when(state === sOp){op := in_buffer - 10.U} // add:0.U, sub:1.U, mul:2.U，又 +:0xA, -:0xB, *:0xF
+
+    when(state === sEqual){
+        src1 := 0.U
+        src2 := 0.U
+        op := 0.U
+        in_buffer := 0.U
+    }
+
+    io.value.valid := Mux(state === sEqual,true.B,false.B)
+    io.value.bits := MuxLookup(op,0.U,Seq(
+        add -> (src1 + src2),
+        sub -> (src1 - src2),
+        mul -> (src1 * src2)
+    ))
 }

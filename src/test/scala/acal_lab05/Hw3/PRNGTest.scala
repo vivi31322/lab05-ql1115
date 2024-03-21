@@ -40,7 +40,7 @@ class PRNGTest(dut:PRNG) extends PeekPokeTester(dut) {
     }
 
     if(error == 0){
-        println("You pass the Hw6-2-1, Well done!!")
+        println("You pass the Hw5-2-1, Well done!!")
     }else{
             println("Oh no!! There must be something wrong in your PRNG...Correct these situations...")
             println("1. Repeated numbers")

@@ -22,9 +22,13 @@ class LFSR_Fibonacci (n:Int)extends Module{
     })
 
     val shiftReg = RegInit(VecInit(Seq.fill(n)(false.B)))
+    val isFirstCycle = RegInit(true.B)
 
-    when(io.seed.valid){
-      shiftReg zip io.seed.bits.asBools map {case(l,r) => l := r}
+    when(isFirstCycle) {
+      when(io.seed.valid){
+        shiftReg zip io.seed.bits.asBools map {case(l,r) => l := r}
+        isFirstCycle := false.B
+      }
     }.otherwise{
 
       //Barrel Shift Register
